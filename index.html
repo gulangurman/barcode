@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Barcode checker web3 dApp</title>
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Barcode checker</h1>
+        <label for="document" class="col-lg-2 control-label">
+            Save Barcode
+        </label>
+        <input id="document" type="text">
+        <button id="btnSave">Save</button>        
+        <label for="document2" class="col-lg-2 control-label">
+            Check Barcode
+        </label>
+        <input id="document2" type="text">
+        <button id="btnCheck">Check</button>        
+        <h2 id="result"></h2>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script>
+
+async function loadWeb3() {          
+    web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:7545"));
+}
+        
+async function loadContract() {
+  abi = [
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "document",
+        "type": "string"
+      }
+    ],
+    "name": "store",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "document",
+        "type": "string"
+      }
+    ],
+    "name": "check",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+  address = '0xc1184C9aeF431285c534232FE1c5e9D27860Ff3C' 
+  return await new web3.eth.Contract(abi,address);               
+}
+async function getCurrentAccount() {
+  const accounts = await web3.eth.getAccounts();
+  //console.log(accounts)
+  return accounts[0];
+}
+async function load() {
+  await loadWeb3();
+  contract = await loadContract();
+  $("#btnSave").click(async function() {
+    const account = await getCurrentAccount();
+    contract.methods.store($("#document").val()
+      ).send({from:account});
+  });
+  $("#btnCheck").click(async function() {
+    contract.methods.check($("#document2").val()
+      ).call(function(error, result) {
+      if(!error) {
+        $("#result").html(result.toString());
+        console.log("result is " + result);
+      } else
+        console.error(error);
+      });
+  });
+}
+load();
+    </script>
+</body>
+</html>
